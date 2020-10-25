@@ -12,7 +12,7 @@ impl<'a> Msg {
     // const REFUSE_USER: &'a str =
     //     "Mi dispiace ma papà ha detto che non posso parlare con gli sconosciuti.\nAddio.";
 
-    pub async fn welcome_msg(cx: &UpdateWithCx<Message>) -> ResponseResult<Message> {
+    pub async fn welcome_msg(cx: UpdateWithCx<Message>) -> ResponseResult<Message> {
         cx.answer_str(Self::WELCOME_1).await?;
         cx.answer(Self::WELCOME_MD)
             .parse_mode(ParseMode::MarkdownV2)
@@ -23,23 +23,18 @@ impl<'a> Msg {
     }
 }
 
-pub async fn autenticate(login: Option<crate::command::Login>) -> Option<reqwest::Response> {
-    match login {
-        Some(l) => {
-            let mut map = HashMap::new();
-            map.insert("username", l.username);
-            map.insert("password", l.password);
+pub async fn autenticate(l: crate::command::Login) -> ResponseResult<reqwest::Response> {
+    let mut map = HashMap::new();
+    map.insert("username", l.username);
+    map.insert("password", l.password);
 
-            // "alice_url.xx/authenticate"
-            let url = dotenv::var("SERVER_URL").expect("SERVER_URL undefined");
+    // "alice_url.xx/authenticate"
+    let url = dotenv::var("SERVER_URL").expect("SERVER_URL undefined");
 
-            reqwest::Client::new()
-                .post(&url)
-                .json(&map)
-                .send()
-                .await
-                .ok()
-        }
-        None => None,
-    }
+    reqwest::Client::new()
+        .post(&url)
+        .json(&map)
+        .send()
+        .await
+        .map_err(|e| RequestError::NetworkError(e))
 }

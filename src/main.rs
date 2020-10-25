@@ -7,61 +7,74 @@ use dotenv;
 use teloxide::prelude::*;
 use teloxide_macros::{teloxide, Transition};
 
-use crate::command::{BotCommand, Command, FromStr, Login};
+use crate::command::{BotCommand, Command, Login};
 
-use std::convert::Infallible;
-
+type Cx = UpdateWithCx<Message>;
+type In = DialogueWithCx<Message, Dialogue, std::convert::Infallible>;
 type Out = TransitionOut<Dialogue>;
-type In = DialogueWithCx<Message, Dialogue, Infallible>;
 
-struct _1State;
-struct _2State;
-struct _3State;
+// struct _1State;
+// struct _2State;
+// struct _3State;
 
-#[teloxide(subtransition)]
-async fn _1_transition(_state: _1State, _cx: TransitionIn, _ans: String) -> Out {
-    _cx.answer_str("state 1").await?;
-    next(_2State)
-}
+// #[teloxide(subtransition)]
+// async fn _1_transition(_state: _1State, _cx: TransitionIn, _ans: String) -> Out {
+//     _cx.answer_str("state 1").await?;
+//     next(_2State)
+// }
 
-#[teloxide(subtransition)]
-async fn _2_transition(_state: _2State, _cx: TransitionIn, _ans: String) -> Out {
-    _cx.answer_str("state 2").await?;
-    next(_3State)
-}
+// #[teloxide(subtransition)]
+// async fn _2_transition(_state: _2State, _cx: TransitionIn, _ans: String) -> Out {
+//     _cx.answer_str("state 2").await?;
+//     next(_3State)
+// }
 
-#[teloxide(subtransition)]
-async fn _3_transition(_state: _3State, _cx: TransitionIn, _ans: String) -> Out {
-    _cx.answer_str("state 3").await?;
-    exit()
-}
+// #[teloxide(subtransition)]
+// async fn _3_transition(_state: _3State, _cx: TransitionIn, _ans: String) -> Out {
+//     _cx.answer_str("state 3").await?;
+//     exit()
+// }
 
 #[teloxide(subtransition)]
 async fn login_transition(_state: LoginState, cx: TransitionIn, ans: String) -> Out {
-    let l = Login::from_str(&ans).ok();
-    cx.answer_str(format!("ans: {}", ans)).await?;
+    let l = Login::parse(&ans).ok();
+    cx.answer_str(format!("cred: {:#?}", l)).await?;
 
-    match utils::autenticate(l).await {
-        Some(_) => cx.answer_str("Adesso sei autenticato!").await?,
-        None => cx.answer_str("Impossibile autenticarsi").await?,
-    };
-
+    answer_autentication(cx, l).await?;
     exit()
 }
 
+async fn answer_autentication(cx: Cx, l: Option<Login>) -> ResponseResult<Message> {
+    match l {
+        None => cx.answer_str("Credenziali non valide").await,
+        Some(l) => match utils::autenticate(l).await {
+            Ok(_) => cx.answer_str("Adesso sei autenticato!").await,
+            _ => cx.answer_str("Impossibile autenticarsi").await,
+        },
+    }
+}
+
+#[teloxide(subtransition)]
+async fn idle_transision(_state: IdleState, cx: TransitionIn, _ans: String) -> Out {
+    cx.answer_str(Command::descriptions()).await?;
+    exit()
+}
+
+struct IdleState;
 struct LoginState;
 
 #[derive(Transition, From)]
 enum Dialogue {
+    IdleState(IdleState),
     LoginState(LoginState),
-    _1(_1State),
-    _2(_2State),
-    _3(_3State),
+    // _1(_1State),
+    // _2(_2State),
+    // _3(_3State),
 }
 
 impl Default for Dialogue {
     fn default() -> Self {
-        Self::_1(_1State)
+        Self::IdleState(IdleState)
     }
 }
 
@@ -109,12 +122,13 @@ async fn run() {
         .await;
 }
 
-/* quando viene passato un nuovo comando si esce dal
- * dialogo precedentemente iniziato
+/* Quando viene passato un nuovo comando si esce dal
+ * dialogo in corso e si esegue il comando.
+ * Se il comando necessita di un dialogo, inizia.
  *
  * `/cancel` per uscire dal dialogo in qualsiasi momento
  */
-async fn handle_message(cx: UpdateWithCx<Message>, dialogue: Dialogue) -> Out {
+async fn handle_message(cx: Cx, dialogue: Dialogue) -> Out {
     match Command::parse(
         cx.update.text().unwrap(),
         dotenv::var("BOT_NAME").expect("BOT_NAME undefined"),
@@ -126,7 +140,7 @@ async fn handle_message(cx: UpdateWithCx<Message>, dialogue: Dialogue) -> Out {
                 exit()
             }
             Command::Start => {
-                utils::Msg::welcome_msg(&cx).await?;
+                utils::Msg::welcome_msg(cx).await?;
                 exit()
             }
             Command::Help => {
@@ -135,10 +149,7 @@ async fn handle_message(cx: UpdateWithCx<Message>, dialogue: Dialogue) -> Out {
             }
             Command::Login(login) => match login {
                 Some(_) => {
-                    match utils::autenticate(login).await {
-                        Some(_) => cx.answer_str("Adesso sei autenticato!").await?,
-                        None => cx.answer_str("Impossibile autenticarsi").await?,
-                    };
+                    answer_autentication(cx, login).await?;
                     exit()
                 }
                 None => {
@@ -146,13 +157,19 @@ async fn handle_message(cx: UpdateWithCx<Message>, dialogue: Dialogue) -> Out {
                     next(Dialogue::login_start())
                 }
             },
-            Command::Prova => {
-                cx.answer_str("inserisci nome e pass").await?;
-                next(dialogue)
+            Command::Admin => {
+                // TODO: Aggiungere i comandi degli admin
+                cx.answer_str("todo: comandi degli admin").await?;
+                exit()
+            }
+            Command::Credits => {
+                // TODO: Aggiungere i credits
+                cx.answer_str("todo: chi ha lavorato al bot").await?;
+                exit()
             }
         },
 
-        // continua un dialogo del comando passato
+        // continua un dialogo in corso
         _ => {
             let ans = cx.update.text_owned().unwrap();
             dialogue.react(cx, ans).await

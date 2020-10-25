@@ -8,26 +8,34 @@ pub use std::str::FromStr;
     description = "Queste sono le istruzioni che puoi darmi 😄:"
 )]
 pub enum Command {
+    // comandi di default
     #[command(description = "off")]
     Start,
     #[command(description = "off")]
     Help,
     #[command(description = "off")]
     Cancel,
+
     #[command(
-        description = "permette l'accesso alle api",
+        description = "richiedi l'accesso alle api",
         parse_with = "accept_login"
     )]
     Login(Option<Login>),
-    #[command(description = "prova")]
-    Prova,
-    // #[command(description = "presentati ad Elisa", parse_with = "accept_option")]
-    // Username(Option<String>)
+    #[command(description = "display dei comandi degli admin")]
+    Admin,
+    #[command(description = "display i credits del bot")]
+    Credits,
 }
-
+#[derive(Debug)]
 pub struct Login {
     pub username: String,
     pub password: String,
+}
+
+impl Login {
+    pub fn parse(s: &str) -> Result<Self, <Self as FromStr>::Err> {
+        Self::from_str(s)
+    }
 }
 
 impl FromStr for Login {
@@ -35,11 +43,13 @@ impl FromStr for Login {
 
     fn from_str(s: &str) -> Result<Self, <Self as FromStr>::Err> {
         let res = s.split_ascii_whitespace().collect::<Vec<_>>();
-
-        Ok(Self {
-            username: res.first().map(|s| s.to_string()).unwrap_or_default(),
-            password: res.last().map(|s| s.to_string()).unwrap_or_default(),
-        })
+        match res.len() {
+            2 => Ok(Self {
+                username: res.first().map(|s| s.to_string()).unwrap_or_default(),
+                password: res.last().map(|s| s.to_string()).unwrap_or_default(),
+            }),
+            _ => Err(ParseError::IncorrectFormat("Invalid arguments".into())),
+        }
     }
 }
 

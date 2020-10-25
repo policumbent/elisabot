@@ -8,7 +8,7 @@ This is the list of commands to give to [@BotFather](https://telegram.me/botfath
 
 ```
 login - permette l'accesso alle api
-admin - comandi riservati agli admin 
+admin - display dei comandi degli admin 
 credits - display i credits del bot
 cancel - cancella l'operazione corrente
 ```
