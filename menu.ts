@@ -1,31 +1,17 @@
 import { Menu } from "./deps.ts";
-import { ApiContext } from "./session.ts";
-
-class State {
-  token: boolean;
-
-  constructor() {
-    this.token = false;
-  }
-}
-
-export const state = new State();
+import { Context } from "./session.ts";
+import { askToken, credits, printToken } from "./messages.ts";
 
 /**
  * Main menu used as root of inlineKeybord
  */
-const mainMenu = new Menu<ApiContext>("inline")
-  .text("get token", (ctx) =>
-    ctx.reply(`Your token is: ${ctx.session.apiToken}.`)
-  )
-  .text("set token", (ctx) => {
-    ctx.reply("Ok, send me your new token.");
-    state.token = true;
-  })
+const mainMenu = new Menu<Context>("inline")
+  .text("get token", printToken)
+  .text("set token", askToken)
   .submenu("Credits", "credits-menu");
 
-const settings = new Menu<ApiContext>("credits-menu")
-  .text("Show Credits", (ctx) => ctx.reply("Powered by grammY"))
+const settings = new Menu<Context>("credits-menu")
+  .text("Show Credits", credits)
   .back("Go Back");
 
 mainMenu.register(settings);
