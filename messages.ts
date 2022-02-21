@@ -1,5 +1,6 @@
 import { Context } from "./session.ts";
 import mainMenu from "./menu.ts";
+import { State } from "./machine.ts";
 
 export function welcome(ctx: Context) {
   ctx.reply("Ciao sono Elisa, pronta per aiutarti!");
@@ -43,7 +44,7 @@ export function printToken(ctx: Context) {
 export function machineReply(ctx: Context) {
   const state = ctx.session.state;
 
-  if (state.isSetToken()) {
+  if (state.is(State.SetToken)) {
     state.toIdle();
 
     const text = ctx.message?.text!;
