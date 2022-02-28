@@ -1,6 +1,8 @@
-# ElisaBot
+![Elisabot](img/elisabot.svg)
 
-Simpatico bot [Telegram](https://core.telegram.org/bots) per gestire [ALICE](https://github.com/policumbent/alice) e [pino](https://github.com/policumbent/pino)
+<h3 align="center">
+Simpatico bot telegram per gestire <a href=https://github.com/policumbent/alice >ALICE</a> e <a href=https://github.com/policumbent/pino>pino</a>
+</h3>
 
 ## Command
 
