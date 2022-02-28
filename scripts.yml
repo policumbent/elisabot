@@ -10,13 +10,13 @@ lock: lock.json
 scripts:
   dev:
     desc: Start bot for development
-    cmd: bot.ts
+    cmd: src/bot.ts
     watch: true
     lock: false
 
   start:
     desc: Runs the script
-    cmd: bot.ts
+    cmd: src/bot.ts
 
   test:
     desc: Testing the script
@@ -26,13 +26,13 @@ scripts:
   # Native compilation
   compile:
     desc: Compile the script
-    cmd: deno compile --allow-net --allow-env bot.ts
+    cmd: deno compile --allow-net --allow-env src/bot.ts
     noCheck: true
 
   # Cross compilation from a linux/macOS machine to win
   compile_win:
     desc: Compile the script for Windows
-    cmd: deno compile --target x86_64-pc-windows-msvc --allow-net --allow-env bot.ts
+    cmd: deno compile --target x86_64-pc-windows-msvc --allow-net --allow-env src/bot.ts
     noCheck: true
 
   update:

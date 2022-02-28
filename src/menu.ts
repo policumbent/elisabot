@@ -1,4 +1,4 @@
-import { Menu } from "./deps.ts";
+import { Menu } from "../deps.ts";
 import { Context } from "./session.ts";
 import { askToken, credits, printToken } from "./messages.ts";
 

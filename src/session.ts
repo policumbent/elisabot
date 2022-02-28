@@ -1,4 +1,4 @@
-import { Context as _Context, SessionFlavor } from "./deps.ts";
+import { Context as _Context, SessionFlavor } from "../deps.ts";
 import Machine from "./machine.ts";
 
 export interface SessionData {

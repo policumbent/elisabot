@@ -1,4 +1,4 @@
-import { Bot, session } from "./deps.ts";
+import { Bot, session } from "../deps.ts";
 import { Context, initial } from "./session.ts";
 import mainMenu from "./menu.ts";
 
