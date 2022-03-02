@@ -1,4 +1,4 @@
-![Elisabot](img/elisabot.svg)
+![Elisabot](img/banner.png)
 
 <h3 align="center">
 Simpatico bot telegram per gestire <a href=https://github.com/policumbent/alice >ALICE</a> e <a href=https://github.com/policumbent/pino>pino</a>
